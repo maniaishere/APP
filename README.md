@@ -1,5 +1,4 @@
 
-
 ### Single server
 ```
 #To execute - From two command prompts, execute server (first) and client programs.
@@ -252,3 +251,81 @@ print(msg)
 
 clnt_sock.close()
 ```
+
+
+### UDP Server
+``` 
+import socket
+import sys
+
+# Create a UDP/IP socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Bind the socket to the port
+server_address = ('localhost', 10000)
+print('starting up on %s port %s' % server_address)
+sock.bind(server_address)
+
+print('\nwaiting to receive message')
+data, address = sock.recvfrom(4096)
+
+print('received %s bytes from %s' % (len(data), address))
+print(data)
+
+if data:
+    sent = sock.sendto(data, address)
+    print('sent %s bytes back to %s' % (sent, address))
+```
+### Server_UDP
+```
+import socket
+import sys
+
+# Create a UDP socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+server_address = ('localhost', 10000)
+message = 'This is the message.  It will be repeated.'
+
+try:
+
+    # Send data
+    print('sending "%s"' % message)
+    sent = sock.sendto(message.encode(), server_address)
+
+    # Receive response
+    print('waiting to receive')
+    data, server = sock.recvfrom(4096)
+    print('received "%s"' % data)
+
+finally:
+    print('closing socket')
+    sock.close()
+```
+
+### UDP Client
+```
+import socket
+import sys
+
+# Create a UDP socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+server_address = ('localhost', 10000)
+message = 'This is the message.  It will be repeated.'
+
+try:
+
+    # Send data
+    print('sending "%s"' % message)
+    sent = sock.sendto(message.encode(), server_address)
+
+    # Receive response
+    print('waiting to receive')
+    data, server = sock.recvfrom(4096)
+    print('received "%s"' % data)
+
+finally:
+    print('closing socket')
+    sock.close()
+ ```
