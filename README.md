@@ -149,3 +149,106 @@ clnt_sock.close()
 
 ```
 
+### multi_parallel server
+``` 
+from socket import *
+import threading
+
+#Step 1 - Create a TCP/IP socket.
+#This socket is used in listening for connections
+srvr_sock = socket(AF_INET,SOCK_STREAM)
+
+#Step 2 - Bind the socket - Argument is an address tuple
+srvr_sock.bind(('localhost',5700))
+
+#Step 3 - Make the socket listen for valid connections
+srvr_sock.listen(5)#5 is the number of clients that could be queued before rejection
+print("Server started....")
+
+#One client-server talking  - work handled by thread
+def clientTalking(*tpl):
+    #Server sends a welcome message
+    wel_msg = "Welcome client %s"%tpl[1][0]
+    conn = tpl[0]
+    conn.send(wel_msg.encode())
+
+    #Receive the reply from client
+    rec_msg=conn.recv(1024)
+    print(rec_msg)    #Reverse the reply and send it back
+    b_msg = str(rec_msg)[::-1].encode()
+    conn.send(b_msg)
+    conn.close()
+
+
+
+while True:
+    #Step 4 - Socket accepts when a valid client connects
+    tpl_clnt = srvr_sock.accept() #same as >>>a,b = srvr_sock.accept()
+    #The result of accpet is a tuple of two elements
+    #First element is another socket object for talking between the server and client
+    #Second element is the address tuple (ip, port) of the client
+
+    #Every client-server talking is handled by a thread
+    thrd = threading.Thread(target=clientTalking,args=tpl_clnt)
+    thrd.start()
+```
+
+#### client 1
+``` 
+from socket import *
+import time
+
+#Step 1 - Create a TCP/IP socket.
+#This socket is used to connect to any TCP/IP socket server
+clnt_sock = socket(AF_INET,SOCK_STREAM)
+
+#Step 2 - Connect the socket to the server
+clnt_sock.connect(('localhost',5700))
+
+#Step 3 - Receive the welcome message from the serverr
+msg = clnt_sock.recv(1024)
+print(msg)
+
+#make it sleep for 10 seconds
+time.sleep(20)
+
+#Step 4 - Send a string to the server
+msg = "Hello to server from client 1"
+clnt_sock.send(msg.encode())
+
+#Step 5 - Receive the reversed string from the server and print
+msg = clnt_sock.recv(1024)
+print(msg)
+
+clnt_sock.close()
+
+```
+
+#### client 2
+```
+from socket import *
+import time
+
+#Step 1 - Create a TCP/IP socket.
+#This socket is used to connect to any TCP/IP socket server
+clnt_sock = socket(AF_INET,SOCK_STREAM)
+
+#Step 2 - Connect the socket to the server
+clnt_sock.connect(('localhost',5700))
+
+#Step 3 - Receive the welcome message from the serverr
+msg = clnt_sock.recv(1024)
+print(msg)
+
+#This client does not sleep
+
+#Step 4 - Send a string to the server
+msg = "Hello to server from client 2"
+clnt_sock.send(msg.encode())
+
+#Step 5 - Receive the reversed string from the server and print
+msg = clnt_sock.recv(1024)
+print(msg)
+
+clnt_sock.close()
+```
