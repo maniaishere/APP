@@ -329,3 +329,65 @@ finally:
     print('closing socket')
     sock.close()
  ```
+
+### Logical Programming
+
+###Factorial
+
+```
+#Factorial of N
+pyDatalog.create_terms('factorial, N')
+
+factorial[N] = N*factorial[N-1]
+factorial[1] = 1
+
+print(factorial[5]==N)
+```
+
+###big bear
+```
+from pyDatalog import pyDatalog
+pyDatalog.create_terms("Big","Bear","Elephant","Small","Cat", "Brown", "Black", "Gray", "Elephant", "X", 'Y', "Size", "Color","Dark")
+
++Size("Bear", "Big")
++Size("Elephant", "Big")
++Size("Cat", "Small")
++Color("Bear", "Brown")
++Color("Cat", "Black")
++Color("Elephant", "gray")
+Dark(X) <= (Color(X, "Black"))
+Dark(X) <= (Color(X, "Brown"))
+print("Dark and Big animals are --")
+print(Dark(X) & Size(X, "Big"))
+```
+
+###Father Child
+```
+from pyDatalog import pyDatalog
+pyDatalog.create_terms('father','X','Y','Z','M','brothers','cousins','grandson','descendent')
+
++(father["f"]=="c")
++(father["c"]=="a")
++(father["b"]=="a")
++(father["d"]=="b")
++(father["e"]=="b")
+
+""" Define family rules """
+brothers(X, Y) <= (father[X] == Z) & (father[Y] == Z) & ~(X==Y)
+cousins(X, Y) <= (father[X] == Z) & (father[Y] == M) & (brothers(M,Z))
+grandson(X, Y) <= (father[X] == Z) & (father[Z] == Y)
+descendent(X, Y) <= (father[X] == Y)
+
+print("Brothers in the family are ")
+print(brothers(X, Y))
+print("\n\nCousins are ")
+print(cousins(X, Y))
+print("\nGrandson are ")
+print(grandson(X, Y))
+print("Descendent : ")
+print(descendent(X,Y))
+
+print(Y==father[X])
+```
+
+
