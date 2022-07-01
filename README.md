@@ -472,3 +472,128 @@ parkingExitThread       = threading.Thread(target=parkingExit)
 parkingEntryThread.start()
 parkingExitThread.start()
 ```
+### Lock
+```
+# Synchronizing thread
+import threading, time
+def print_time(threadName, delay, counter):
+    while counter:
+        time.sleep(delay)
+        threadLock.acquire()
+        print ("%s: %s" % (threadName, time.ctime(time.time())))
+        counter -= 1
+        threadLock.release()
+class myThread (threading.Thread):
+    def __init__(self, name, counter,delay):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.counter = counter
+        self.delay = delay  
+    def run(self):
+        print ("Starting " + self.name)
+        # Get lock to synchronize printing
+        threadLock.acquire()
+        print_time(self.name, self.counter, self.delay)
+        # Free lock to release next thread
+        threadLock.release()
+threadLock = threading.Lock()
+threads = []
+# Create new threads
+thread1 = myThread("Thread-1", 1,3)
+thread2 = myThread("Thread-2", 2,5)
+# Start new Threads
+thread1.start()
+thread2.start()
+# Add threads to thread list
+threads.append(thread1)
+threads.append(thread2)
+# Wait for all threads to complete
+for t in threads:
+    t.join()
+print ("Exiting Main Thread")
+```
+###Semaphore
+```
+# An example python program using semaphore provided by the python threading module
+import threading
+import time
+parkedLock      = threading.Lock()
+removedLock     = threading.Lock()
+#Counters for total number of parkings and removals
+parked          = 0
+removed         = 0
+#Semaphore
+availbleParkings = threading.Semaphore(5)#Only five parking slots available
+
+def ParkCar(): #Parking thread will execute this work
+        availbleParkings.acquire()#Decremented by one
+        global parkedLock
+        parkedLock.acquire()#Acquire lock so that no other thread simultaneously modifies the parkedLock global variable
+        global parked
+        parked = parked+1
+        parkedLock.release()
+        print("Parked: %d"%(parked))      
+def RemoveCar(): #Removing thread will execute this work
+        availbleParkings.release()#Incremented by one
+        global removedLock
+        removedLock.acquire()
+        global removed
+        removed = removed+1
+        removedLock.release()
+        print("Removed: %d"%(removed))       
+# Thread that simulates the entry of cars into the parking lot
+def parkingEntry():
+    # Creates multiple threads inside to simulate cars that are parked
+    for i in range(6):
+        time.sleep(1)
+        incomingCar = threading.Thread(target=ParkCar)
+        incomingCar.start()
+
+# Thread that simulates the exit of cars from the parking lot
+def parkingExit():
+    # Creates multiple threads inside to simulate cars taken out from the parking lot
+    for j in range(5):
+        time.sleep(15)
+        outgoingCar = threading.Thread(target=RemoveCar)
+        outgoingCar.start()
+
+# Start the parking eco-system
+parkingEntryThread      = threading.Thread(target=parkingEntry)
+parkingExitThread       = threading.Thread(target=parkingExit)
+parkingEntryThread.start()
+parkingExitThread.start()
+```
+
+### Events
+```
+import threading
+import time
+item = None
+# A semaphore to indicate that an item is available
+available = threading.Semaphore(0)
+# An event to indicate that processing is complete
+completed = threading.Event()
+# A worker thread
+def worker():
+    while True:
+        available.acquire()
+        print( "worker: processing", item)
+        time.sleep(5)
+        print( "worker: done")
+        completed.set()#Objects flag set to true
+# A producer thread
+def producer():
+    global item
+    for x in range(5):
+        completed.clear()       # Clear the event
+        item = x                # Set the item
+        print( "producer: produced an item")
+        available.release()     # Signal on the semaphore
+        completed.wait()#Blocks until flag is true
+        print( "producer: item was processed")
+t1 = threading.Thread(target=producer)
+t1.start()
+t2 = threading.Thread(target=worker)
+t2.setDaemon(True)
+t2.start()
+```
