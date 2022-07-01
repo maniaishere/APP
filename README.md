@@ -390,4 +390,85 @@ print(descendent(X,Y))
 print(Y==father[X])
 ```
 
+##THREADING
+```
+import threading
+import time
+def print_time(threadName, counter, delay):
+    while counter:
+      time.sleep(delay)
+      print ("%s: %s" % (threadName, time.ctime(time.time())))
+      counter -= 1
+class myThread (threading.Thread):#Step 1 - Subclass the threading class
+    def __init__(self, name, counter,delay):#Step 2 - Call parent class constructor in child
+        threading.Thread.__init__(self)
+        self.name = name
+        self.counter = counter
+        self.delay = delay
+    def run(self):#Step 3 - Override the run method
+        print( "Starting " + self.name)
+        print_time(self.name, self.counter, self.delay)
+        print ("Exiting " + self.name)
+# Step 4 - Create new threads
+thread1 = myThread("Thread-1", 2,2)
+thread2 = myThread("Thread-2", 3,1)
+# Step 5 - Start new Threads
+thread1.start()
+thread2.start()
+#Parent Wait till all children finish
+thread1.join()
+thread2.join()
+print ("Exiting Main Thread")
+```
 
+## CAR PARKING USING THREAD
+```
+# An example python program using semaphore provided by the python threading module
+import threading
+import time
+parkedLock      = threading.Lock()
+removedLock     = threading.Lock()
+#Counters for total number of parkings and removals
+parked          = 0
+removed         = 0
+#Semaphore
+availbleParkings = threading.Semaphore(5)#Only five parking slots available
+
+def ParkCar(): #Parking thread will execute this work
+        availbleParkings.acquire()#Decremented by one
+        global parkedLock
+        parkedLock.acquire()#Acquire lock so that no other thread simultaneously modifies the parkedLock global variable
+        global parked
+        parked = parked+1
+        parkedLock.release()
+        print("Parked: %d"%(parked))      
+def RemoveCar(): #Removing thread will execute this work
+        availbleParkings.release()#Incremented by one
+        global removedLock
+        removedLock.acquire()
+        global removed
+        removed = removed+1
+        removedLock.release()
+        print("Removed: %d"%(removed))       
+# Thread that simulates the entry of cars into the parking lot
+def parkingEntry():
+    # Creates multiple threads inside to simulate cars that are parked
+    for i in range(6):
+        time.sleep(1)
+        incomingCar = threading.Thread(target=ParkCar)
+        incomingCar.start()
+
+# Thread that simulates the exit of cars from the parking lot
+def parkingExit():
+    # Creates multiple threads inside to simulate cars taken out from the parking lot
+    for j in range(5):
+        time.sleep(15)
+        outgoingCar = threading.Thread(target=RemoveCar)
+        outgoingCar.start()
+
+# Start the parking eco-system
+parkingEntryThread      = threading.Thread(target=parkingEntry)
+parkingExitThread       = threading.Thread(target=parkingExit)
+parkingEntryThread.start()
+parkingExitThread.start()
+```
